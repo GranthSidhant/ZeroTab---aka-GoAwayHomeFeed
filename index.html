@@ -155,6 +155,15 @@
             font-size: 1rem;
         }
 
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: white;
+        }
+
         .submit-btn {
             background-color: #4a90e2;
             color: white;
@@ -177,6 +186,29 @@
 
         .hidden-buttons.visible {
             display: grid;
+        }
+
+        .emoji-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            max-width: 100%;
+        }
+
+        .emoji-option {
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+
+        .emoji-option:hover {
+            background-color: #f0f0f0;
+            border-color: #ddd;
         }
     </style>
 </head>
@@ -254,8 +286,20 @@
                     <input type="text" id="siteUrl" placeholder="https://example.com/search?q=QUERY" required>
                 </div>
                 <div class="form-group">
-                    <label for="siteEmoji">Emoji:</label>
-                    <input type="text" id="siteEmoji" placeholder="🔍" required>
+                    <label for="siteEmoji">Choose Emoji:</label>
+                    <div class="emoji-selector">
+                        <span class="emoji-option" data-emoji="🔍">🔍</span>
+                        <span class="emoji-option" data-emoji="🌐">🌐</span>
+                        <span class="emoji-option" data-emoji="📱">📱</span>
+                        <span class="emoji-option" data-emoji="📷">📷</span>
+                        <span class="emoji-option" data-emoji="▶️">▶️</span>
+                        <span class="emoji-option" data-emoji="💻">💻</span>
+                        <span class="emoji-option" data-emoji="📚">📚</span>
+                        <span class="emoji-option" data-emoji="🛒">🛒</span>
+                        <span class="emoji-option" data-emoji="🎮">🎮</span>
+                        <span class="emoji-option" data-emoji="🎵">🎵</span>
+                    </div>
+                    <input type="text" id="siteEmoji" placeholder="Or type emoji here" required>
                 </div>
                 <button type="submit" class="submit-btn">Add Search Option</button>
             </form>
@@ -329,10 +373,16 @@
                 const siteUrl = document.getElementById('siteUrl').value;
                 const siteEmoji = document.getElementById('siteEmoji').value;
 
+                // Special case for Instagram
+                let finalUrl = siteUrl;
+                if (siteName.toLowerCase().includes('instagram')) {
+                    finalUrl = 'https://www.instagram.com/explore/tags/QUERY';
+                }
+
                 // Create new button
                 const newButton = document.createElement('button');
                 newButton.className = 'search-button';
-                newButton.dataset.url = siteUrl;
+                newButton.dataset.url = finalUrl;
                 newButton.innerHTML = `
                     <span class="button-emoji">${siteEmoji}</span>
                     ${siteName}
@@ -344,7 +394,7 @@
                 // Save to localStorage
                 saveCustomButton({
                     name: siteName,
-                    url: siteUrl,
+                    url: finalUrl,
                     emoji: siteEmoji
                 });
 
@@ -355,6 +405,28 @@
                 addSearchForm.reset();
                 addMoreModal.style.display = 'none';
             });
+
+            // Add Instagram as a default button in main grid
+            const mainButtonsGrid = document.getElementById('mainButtons');
+            const instagramButton = document.createElement('button');
+            instagramButton.className = 'search-button';
+            // Using a more reliable Instagram search URL
+            instagramButton.dataset.url = 'https://www.instagram.com/explore/tags/QUERY';
+            instagramButton.innerHTML = `
+                <span class="button-emoji">📷</span>
+                Instagram
+            `;
+            
+            // Remove any existing Instagram button from hidden buttons
+            const existingInstaButton = Array.from(hiddenButtons.children)
+                .find(button => button.textContent.trim().toLowerCase() === 'instagram');
+            if (existingInstaButton) {
+                existingInstaButton.remove();
+            }
+            
+            // Add Instagram button to main grid
+            mainButtonsGrid.appendChild(instagramButton);
+            addSearchButtonListeners();
 
             // Save custom button to localStorage
             function saveCustomButton(button) {
