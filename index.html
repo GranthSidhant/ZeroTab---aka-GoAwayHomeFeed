@@ -301,10 +301,51 @@
                 <span class="button-emoji">🖼️</span>
                 Google Images
             </button>
+            <button class="search-button" data-url="https://www.linkedin.com/search/results/all/?keywords=">
+                <span class="button-emoji">💼</span>
+                LinkedIn
+            </button>
+            <button class="search-button" data-url="https://www.bing.com/search?q=">
+                <span class="button-emoji">🔎</span>
+                Bing
+            </button>
+            <button class="search-button" data-url="https://medium.com/search?q=">
+                <span class="button-emoji">📝</span>
+                Medium
+            </button>
+            <button class="search-button" data-url="https://www.quora.com/search?q=">
+                <span class="button-emoji">❓</span>
+                Quora
+            </button>
+            <button class="search-button tooltip" data-url="https://www.instagram.com/">
+                <span class="button-emoji">📷</span>
+                Instagram
+                <span class="tooltip-text">This search only works with exact Instagram usernames</span>
+            </button>
         </div>
 
         <div class="buttons-grid hidden-buttons" id="hiddenButtons">
-            <!-- Custom buttons will be added here -->
+            <!-- Additional buttons will be added here -->
+            <button class="search-button" data-url="https://www.facebook.com/search/top?q=">
+                <span class="button-emoji">👥</span>
+                Facebook
+            </button>
+            <button class="search-button" data-url="https://www.pinterest.com/search/pins/?q=">
+                <span class="button-emoji">📌</span>
+                Pinterest
+            </button>
+            <button class="search-button" data-url="https://open.spotify.com/search/">
+                <span class="button-emoji">🎵</span>
+                Spotify
+            </button>
+            <button class="search-button" data-url="https://www.imdb.com/find?q=">
+                <span class="button-emoji">🎬</span>
+                IMDB
+            </button>
+            <button class="search-button" data-url="https://www.netflix.com/search?q=">
+                <span class="button-emoji">🎦</span>
+                Netflix
+            </button>
         </div>
 
         <div class="additional-links">
@@ -458,25 +499,30 @@
 
             // Add Instagram as a default button in main grid
             const mainButtonsGrid = document.getElementById('mainButtons');
-            const instagramButton = document.createElement('button');
-            instagramButton.className = 'search-button tooltip';
-            // Using direct Instagram profile URL
-            instagramButton.dataset.url = 'https://www.instagram.com/';
-            instagramButton.innerHTML = `
-                <span class="button-emoji">📷</span>
-                Instagram
-                <span class="tooltip-text">This search only works with exact Instagram usernames</span>
-            `;
+            
+            // Only add Instagram button if it doesn't already exist in main grid
+            const existingMainInstaButton = Array.from(mainButtonsGrid.children)
+                .find(button => button.textContent.trim().toLowerCase().includes('instagram'));
+            
+            if (!existingMainInstaButton) {
+                const instagramButton = document.createElement('button');
+                instagramButton.className = 'search-button tooltip';
+                instagramButton.dataset.url = 'https://www.instagram.com/';
+                instagramButton.innerHTML = `
+                    <span class="button-emoji">📷</span>
+                    Instagram
+                    <span class="tooltip-text">This search only works with exact Instagram usernames</span>
+                `;
+                mainButtonsGrid.appendChild(instagramButton);
+            }
             
             // Remove any existing Instagram button from hidden buttons
             const existingInstaButton = Array.from(hiddenButtons.children)
-                .find(button => button.textContent.trim().toLowerCase() === 'instagram');
+                .find(button => button.textContent.trim().toLowerCase().includes('instagram'));
             if (existingInstaButton) {
                 existingInstaButton.remove();
             }
             
-            // Add Instagram button to main grid
-            mainButtonsGrid.appendChild(instagramButton);
             addSearchButtonListeners();
 
             // Save custom button to localStorage
@@ -500,6 +546,50 @@
                     hiddenButtons.appendChild(newButton);
                 });
             }
+
+            // Add emoji selector functionality
+            function initEmojiSelector() {
+                document.querySelectorAll('.emoji-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const emojiInput = document.getElementById('siteEmoji');
+                        emojiInput.value = option.dataset.emoji;
+                        
+                        // Visual feedback for selection
+                        document.querySelectorAll('.emoji-option').forEach(opt => {
+                            opt.style.backgroundColor = '';
+                            opt.style.borderColor = '#eee';
+                        });
+                        option.style.backgroundColor = '#f0f0f0';
+                        option.style.borderColor = '#4a90e2';
+                    });
+                });
+            }
+
+            // Initialize emoji selector when the modal opens
+            addMoreLink.addEventListener('click', () => {
+                addMoreModal.style.display = 'block';
+                initEmojiSelector(); // Initialize emoji selector when modal opens
+            });
+
+            closeModal.addEventListener('click', () => {
+                addMoreModal.style.display = 'none';
+                // Reset emoji selections when modal closes
+                document.querySelectorAll('.emoji-option').forEach(opt => {
+                    opt.style.backgroundColor = '';
+                    opt.style.borderColor = '#eee';
+                });
+            });
+
+            // Also reset emoji selections when clicking outside the modal
+            window.addEventListener('click', (e) => {
+                if (e.target === addMoreModal) {
+                    addMoreModal.style.display = 'none';
+                    document.querySelectorAll('.emoji-option').forEach(opt => {
+                        opt.style.backgroundColor = '';
+                        opt.style.borderColor = '#eee';
+                    });
+                }
+            });
         });
     </script>
 </body>
