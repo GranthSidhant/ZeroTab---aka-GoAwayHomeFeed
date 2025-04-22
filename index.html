@@ -252,6 +252,49 @@
             border-style: solid;
             border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
         }
+
+        .remove-btn {
+            display: none;
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            z-index: 2;
+        }
+
+        .edit-mode .remove-btn {
+            display: block;
+        }
+
+        .edit-mode .search-button {
+            cursor: move;
+            user-select: none;
+        }
+
+        .edit-mode .search-button:hover {
+            transform: none;
+        }
+
+        .dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+
+        .additional-link.active {
+            color: #ff4444;
+        }
+
+        .additional-link.active:hover {
+            color: #ff6666;
+        }
     </style>
 </head>
 <body>
@@ -351,6 +394,7 @@
         <div class="additional-links">
             <a class="additional-link" id="seeMore">See More</a>
             <a class="additional-link" id="addMore">Add More</a>
+            <a class="additional-link" id="editMode">Edit</a>
         </div>
     </div>
 
@@ -399,6 +443,8 @@
             const closeModal = document.querySelector('.close-modal');
             const addSearchForm = document.getElementById('addSearchForm');
             const hiddenButtons = document.getElementById('hiddenButtons');
+            const editModeLink = document.getElementById('editMode');
+            let isEditMode = false;
 
             // Load custom buttons from localStorage
             loadCustomButtons();
@@ -590,6 +636,181 @@
                     });
                 }
             });
+
+            // Function to save current button configuration
+            function saveButtonConfiguration() {
+                const mainButtons = document.getElementById('mainButtons');
+                const hiddenButtons = document.getElementById('hiddenButtons');
+                
+                const mainConfig = Array.from(mainButtons.children).map(button => ({
+                    name: button.textContent.trim().split('\n')[1].trim(),
+                    url: button.dataset.url,
+                    emoji: button.querySelector('.button-emoji').textContent,
+                    isTooltip: button.classList.contains('tooltip'),
+                    tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
+                }));
+
+                const hiddenConfig = Array.from(hiddenButtons.children).map(button => ({
+                    name: button.textContent.trim().split('\n')[1].trim(),
+                    url: button.dataset.url,
+                    emoji: button.querySelector('.button-emoji').textContent,
+                    isTooltip: button.classList.contains('tooltip'),
+                    tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
+                }));
+
+                localStorage.setItem('mainButtonsConfig', JSON.stringify(mainConfig));
+                localStorage.setItem('hiddenButtonsConfig', JSON.stringify(hiddenConfig));
+            }
+
+            // Function to load button configuration
+            function loadButtonConfiguration() {
+                const mainConfig = JSON.parse(localStorage.getItem('mainButtonsConfig'));
+                const hiddenConfig = JSON.parse(localStorage.getItem('hiddenButtonsConfig'));
+                const mainButtons = document.getElementById('mainButtons');
+                const hiddenButtons = document.getElementById('hiddenButtons');
+
+                if (mainConfig) {
+                    mainButtons.innerHTML = '';
+                    mainConfig.forEach(btn => {
+                        const button = document.createElement('button');
+                        button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
+                        button.dataset.url = btn.url;
+                        button.innerHTML = `
+                            <span class="button-emoji">${btn.emoji}</span>
+                            ${btn.name}
+                            ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
+                        `;
+                        mainButtons.appendChild(button);
+                    });
+                }
+
+                if (hiddenConfig) {
+                    hiddenButtons.innerHTML = '';
+                    hiddenConfig.forEach(btn => {
+                        const button = document.createElement('button');
+                        button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
+                        button.dataset.url = btn.url;
+                        button.innerHTML = `
+                            <span class="button-emoji">${btn.emoji}</span>
+                            ${btn.name}
+                            ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
+                        `;
+                        hiddenButtons.appendChild(button);
+                    });
+                }
+
+                // Reattach click listeners
+                addSearchButtonListeners();
+            }
+
+            // Load saved configuration on page load
+            loadButtonConfiguration();
+
+            // Save configuration after drag and drop
+            function dragEnd(e) {
+                e.target.classList.remove('dragging');
+                saveButtonConfiguration();
+            }
+
+            // Save configuration after removing a button
+            function addRemoveButtons() {
+                document.querySelectorAll('.search-button').forEach(button => {
+                    if (!button.querySelector('.remove-btn')) {
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.innerHTML = '×';
+                        removeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation(); // Prevent button click
+                            if (confirm('Remove this search option?')) {
+                                button.remove();
+                                saveButtonConfiguration();
+                            }
+                        });
+                        button.appendChild(removeBtn);
+                    }
+                });
+            }
+
+            // Toggle edit mode
+            editModeLink.addEventListener('click', () => {
+                isEditMode = !isEditMode;
+                const mainButtons = document.getElementById('mainButtons');
+                const hiddenButtons = document.getElementById('hiddenButtons');
+                
+                editModeLink.classList.toggle('active');
+                mainButtons.classList.toggle('edit-mode');
+                hiddenButtons.classList.toggle('edit-mode');
+
+                if (isEditMode) {
+                    addRemoveButtons();
+                    enableDragAndDrop();
+                } else {
+                    disableDragAndDrop();
+                    saveButtonConfiguration(); // Save when exiting edit mode
+                }
+            });
+
+            // Drag and Drop functionality
+            function enableDragAndDrop() {
+                const buttons = document.querySelectorAll('.search-button');
+                buttons.forEach(button => {
+                    button.draggable = true;
+                    button.addEventListener('dragstart', dragStart);
+                    button.addEventListener('dragend', dragEnd);
+                    button.addEventListener('dragover', dragOver);
+                    button.addEventListener('drop', drop);
+                });
+            }
+
+            function disableDragAndDrop() {
+                const buttons = document.querySelectorAll('.search-button');
+                buttons.forEach(button => {
+                    button.draggable = false;
+                    button.removeEventListener('dragstart', dragStart);
+                    button.removeEventListener('dragend', dragEnd);
+                    button.removeEventListener('dragover', dragOver);
+                    button.removeEventListener('drop', drop);
+                });
+            }
+
+            function dragStart(e) {
+                e.target.classList.add('dragging');
+            }
+
+            function dragOver(e) {
+                e.preventDefault();
+                const draggable = document.querySelector('.dragging');
+                const container = this.parentNode;
+                const afterElement = getDragAfterElement(container, e.clientY);
+                
+                if (afterElement) {
+                    container.insertBefore(draggable, afterElement);
+                } else {
+                    container.appendChild(draggable);
+                }
+            }
+
+            function getDragAfterElement(container, y) {
+                const draggableElements = [...container.querySelectorAll('.search-button:not(.dragging)')];
+                
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    const offset = y - box.top - box.height / 2;
+                    
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element;
+            }
+
+            function drop(e) {
+                e.preventDefault();
+            }
+
+            // Initialize search button listeners
+            addSearchButtonListeners();
         });
     </script>
 </body>
