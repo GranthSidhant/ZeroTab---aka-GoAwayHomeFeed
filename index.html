@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Site Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .search-container {
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.2rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #4a90e2;
+        }
+
+        .search-input::placeholder {
+            color: #999;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-button {
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #fff;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f0f0f0;
+        }
+
+        .search-button:active {
+            transform: translateY(0);
+        }
+
+        .button-emoji {
+            font-size: 1.5rem;
+        }
+
+        .additional-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .additional-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+
+        .additional-link:hover {
+            color: #4a90e2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Type your search here..." autofocus>
+        </div>
+        
+        <div class="buttons-grid">
+            <button class="search-button" data-url="https://www.google.com/search?q=">
+                <span class="button-emoji">🌐</span>
+                Google
+            </button>
+            <button class="search-button" data-url="https://www.youtube.com/results?search_query=">
+                <span class="button-emoji">▶️</span>
+                YouTube
+            </button>
+            <button class="search-button" data-url="https://www.reddit.com/search/?q=">
+                <span class="button-emoji">👽</span>
+                Reddit
+            </button>
+            <button class="search-button" data-url="https://stackoverflow.com/search?q=">
+                <span class="button-emoji">💻</span>
+                StackOverflow
+            </button>
+            <button class="search-button" data-url="https://en.wikipedia.org/Special:Search?search=">
+                <span class="button-emoji">📚</span>
+                Wikipedia
+            </button>
+            <button class="search-button" data-url="https://www.amazon.in/s?k=">
+                <span class="button-emoji">🛒</span>
+                Amazon
+            </button>
+            <button class="search-button" data-url="https://twitter.com/search?q=">
+                <span class="button-emoji">🐦</span>
+                Twitter
+            </button>
+            <button class="search-button" data-url="https://duckduckgo.com/?q=">
+                <span class="button-emoji">🔍</span>
+                DuckDuckGo
+            </button>
+            <button class="search-button" data-url="https://github.com/search?q=">
+                <span class="button-emoji">🧑‍💻</span>
+                GitHub
+            </button>
+            <button class="search-button" data-url="https://www.google.com/search?tbm=isch&q=">
+                <span class="button-emoji">🖼️</span>
+                Google Images
+            </button>
+        </div>
+
+        <div class="additional-links">
+            <a class="additional-link" id="seeMore">See More</a>
+            <a class="additional-link" id="addMore">Add More</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.querySelector('.search-input');
+            const searchButtons = document.querySelectorAll('.search-button');
+            const seeMoreLink = document.getElementById('seeMore');
+            const addMoreLink = document.getElementById('addMore');
+
+            // Prevent form submission on Enter key
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                }
+            });
+
+            // Add click handlers to all search buttons
+            searchButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const query = searchInput.value.trim();
+                    if (query) {
+                        const searchUrl = button.dataset.url + encodeURIComponent(query);
+                        window.open(searchUrl, '_blank');
+                    }
+                });
+            });
+
+            // Add click handler for See More link
+            seeMoreLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('This feature will be implemented in a future update. Stay tuned!');
+            });
+
+            // Add click handler for Add More link
+            addMoreLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                alert('This feature will be implemented in a future update. Stay tuned!');
+            });
+        });
+    </script>
+</body>
+</html> 
