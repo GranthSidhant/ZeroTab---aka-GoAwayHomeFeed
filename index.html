@@ -235,7 +235,7 @@
                 <span class="button-emoji">💻</span>
                 StackOverflow
             </button>
-            <button class="search-button" data-url="https://en.wikipedia.org/Special:Search?search=">
+            <button class="search-button" data-url="https://en.wikipedia.org/wiki/">
                 <span class="button-emoji">📚</span>
                 Wikipedia
             </button>
@@ -373,10 +373,12 @@
                 const siteUrl = document.getElementById('siteUrl').value;
                 const siteEmoji = document.getElementById('siteEmoji').value;
 
-                // Special case for Instagram
+                // Special cases for specific sites
                 let finalUrl = siteUrl;
                 if (siteName.toLowerCase().includes('instagram')) {
                     finalUrl = 'https://www.instagram.com/explore/tags/QUERY';
+                } else if (siteName.toLowerCase().includes('wikipedia')) {
+                    finalUrl = 'https://en.wikipedia.org/wiki/QUERY';
                 }
 
                 // Create new button
