@@ -27,6 +27,40 @@
             width: 100%;
         }
 
+        .title-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: #333;
+            font-weight: 600;
+            margin: 0;
+            padding: 0.5rem;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .edit-mode .page-title {
+            cursor: text;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-color: #f0f0f0;
+        }
+
+        .edit-mode .page-title:hover {
+            border-color: #4a90e2;
+            box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+        }
+
+        .edit-mode .page-title:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+        }
+
         .search-container {
             margin-bottom: 1.5rem;
             width: 100%;
@@ -155,7 +189,6 @@
 
         /* Modal Styles */
         .modal {
-            display: none;
             position: fixed;
             top: 0;
             left: 0;
@@ -163,8 +196,17 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            display: flex;
             justify-content: center;
             align-items: center;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
         }
 
         .modal-content {
@@ -172,8 +214,17 @@
             padding: 2rem;
             width: 90%;
             max-width: 500px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+            opacity: 1;
         }
 
         .close-modal {
@@ -240,24 +291,26 @@
             background-color: #357abd;
         }
 
-        .tooltip {
+         /* Tooltip styles */
+         .tooltip {
             position: relative;
+            display: inline-block;
         }
 
-        .tooltip-text {
+        .tooltip .tooltip-text {
             visibility: hidden;
-            width: 180px;
+            width: 200px;
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
             text-align: center;
-            padding: 6px;
+            padding: 8px;
             border-radius: 6px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -267,7 +320,8 @@
             opacity: 1;
         }
 
-        .tooltip-text::after {
+        /* Arrow for tooltip */
+        .tooltip .tooltip-text::after {
             content: "";
             position: absolute;
             top: 100%;
@@ -455,10 +509,12 @@
         /* Brand Colors */
         .google-color { color: #4285F4; }
         .youtube-color { color: #FF0000; }
+        .youtube-music-color { color: #FF0000; }
         .reddit-color { color: #FF4500; }
         .stackoverflow-color { color: #F48024; }
         .wikipedia-color { color: #000000; }
         .amazon-color { color: #FF9900; }
+        .flipkart-color { color: #2874F0; }
         .twitter-color { color: #1DA1F2; }
         .duckduckgo-color { color: #DE5833; }
         .github-color { color: #171515; }
@@ -477,10 +533,50 @@
         .coursera-color { color: #0056D2; }
         .udemy-color { color: #A435F0; }
         .behance-color { color: #053EFF; }
+
+        .form-help {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .icon-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            transition: all 0.2s ease;
+        }
+
+        .icon-option:hover {
+            background-color: #f0f0f0;
+            border-color: #4a90e2;
+            transform: translateY(-1px);
+        }
+
+        .icon-option.selected {
+            background-color: #f0f0f0;
+            border-color: #4a90e2;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="title-container">
+            <h1 class="page-title" contenteditable="false">ZeroTab</h1>
+        </div>
         <div class="search-container">
             <input type="text" class="search-input" placeholder="Type your search here..." autofocus>
         </div>
@@ -493,6 +589,22 @@
             <button class="search-button" data-url="https://www.youtube.com/results?search_query=">
                 <i class="button-icon youtube-color fab fa-youtube"></i>
                 YouTube
+            </button>
+            <button class="search-button" data-url="https://music.youtube.com/search?q=">
+                <i class="button-icon youtube-music-color fas fa-music"></i>
+                YouTube Music
+            </button>
+            <button class="search-button" data-url="https://www.tiktok.com/search?q=">
+                <i class="button-icon tiktok-color fab fa-tiktok"></i>
+                TikTok
+            </button>
+            <button class="search-button" data-url="https://www.amazon.com/s?k=">
+                <i class="button-icon amazon-color fab fa-amazon"></i>
+                Amazon
+            </button>
+            <button class="search-button" data-url="https://www.flipkart.com/search?q=">
+                <i class="button-icon flipkart-color fas fa-shopping-cart"></i>
+                Flipkart
             </button>
             <button class="search-button" data-url="https://www.reddit.com/search/?q=">
                 <i class="button-icon reddit-color fab fa-reddit-alien"></i>
@@ -545,7 +657,8 @@
             <button class="search-button tooltip" data-url="https://www.instagram.com/">
                 <i class="button-icon instagram-color fab fa-instagram"></i>
                 Instagram
-                <span class="tooltip-text">This search only works with exact Instagram usernames</span>
+                <span class="tooltip-text"></span>
+                
             </button>
         </div>
 
@@ -620,8 +733,9 @@
                     <input type="text" id="siteName" required>
                 </div>
                 <div class="form-group">
-                    <label for="siteUrl">Search URL (use QUERY as placeholder):</label>
-                    <input type="text" id="siteUrl" placeholder="https://example.com/search?q=QUERY" required>
+                    <label for="siteUrl">Search URL:</label>
+                    <input type="text" id="siteUrl" placeholder="https://example.com/search?q=%s" required>
+                    <small class="form-help">Use %s as a placeholder for the search query</small>
                 </div>
                 <div class="form-group">
                     <label for="siteIcon">Choose Icon:</label>
@@ -636,8 +750,13 @@
                         <span class="icon-option" data-icon="fas fa-shopping-cart"><i class="fas fa-shopping-cart"></i></span>
                         <span class="icon-option" data-icon="fas fa-gamepad"><i class="fas fa-gamepad"></i></span>
                         <span class="icon-option" data-icon="fas fa-music"><i class="fas fa-music"></i></span>
+                        <span class="icon-option" data-icon="fab fa-youtube"><i class="fab fa-youtube"></i></span>
+                        <span class="icon-option" data-icon="fab fa-twitter"><i class="fab fa-twitter"></i></span>
+                        <span class="icon-option" data-icon="fab fa-github"><i class="fab fa-github"></i></span>
+                        <span class="icon-option" data-icon="fab fa-instagram"><i class="fab fa-instagram"></i></span>
+                        <span class="icon-option" data-icon="fab fa-facebook"><i class="fab fa-facebook"></i></span>
                     </div>
-                    <input type="text" id="siteIcon" placeholder="Or type Font Awesome class" required>
+                    <input type="text" id="siteIcon" placeholder="Or type Font Awesome class (e.g., fas fa-search)" required>
                 </div>
                 <button type="submit" class="submit-btn">Add Search Option</button>
             </form>
@@ -655,7 +774,29 @@
             const addSearchForm = document.getElementById('addSearchForm');
             const hiddenButtons = document.getElementById('hiddenButtons');
             const editModeLink = document.getElementById('editMode');
+            const pageTitle = document.querySelector('.page-title');
             let isEditMode = false;
+
+            // Load saved title if exists
+            const savedTitle = localStorage.getItem('pageTitle');
+            if (savedTitle) {
+                pageTitle.textContent = savedTitle;
+            }
+
+            // Save title when it's edited
+            pageTitle.addEventListener('blur', () => {
+                if (isEditMode) {
+                    localStorage.setItem('pageTitle', pageTitle.textContent);
+                }
+            });
+
+            // Also save title when user presses Enter
+            pageTitle.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevent new line
+                    pageTitle.blur(); // Remove focus and trigger save
+                }
+            });
 
             // Load custom buttons from localStorage
             loadCustomButtons();
@@ -692,24 +833,27 @@
             // Add More Modal functionality
             addMoreLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                addMoreModal.style.display = 'flex';
+                addMoreModal.classList.add('show');
+                initIconSelector();
             });
 
             closeModal.addEventListener('click', () => {
-                addMoreModal.classList.add('hide');
-                setTimeout(() => {
-                    addMoreModal.style.display = 'none';
-                    addMoreModal.classList.remove('hide');
-                }, 300);
+                addMoreModal.classList.remove('show');
+                // Reset icon selections
+                document.querySelectorAll('.icon-option').forEach(opt => {
+                    opt.style.backgroundColor = '';
+                    opt.style.borderColor = '#eee';
+                });
             });
 
             window.addEventListener('click', (e) => {
                 if (e.target === addMoreModal) {
-                    addMoreModal.classList.add('hide');
-                    setTimeout(() => {
-                        addMoreModal.style.display = 'none';
-                        addMoreModal.classList.remove('hide');
-                    }, 300);
+                    addMoreModal.classList.remove('show');
+                    // Reset icon selections
+                    document.querySelectorAll('.icon-option').forEach(opt => {
+                        opt.style.backgroundColor = '';
+                        opt.style.borderColor = '#eee';
+                    });
                 }
             });
 
@@ -718,49 +862,67 @@
                 e.preventDefault();
                 
                 const siteName = document.getElementById('siteName').value;
-                const siteUrl = document.getElementById('siteUrl').value;
+                const siteUrl = document.getElementById('siteUrl').value.replace('QUERY', '%s');
                 const siteIcon = document.getElementById('siteIcon').value;
-
-                // Special cases for specific sites
-                let finalUrl = siteUrl;
-                if (siteName.toLowerCase().includes('instagram')) {
-                    finalUrl = 'https://www.instagram.com/';
-                    // Add tooltip for custom Instagram buttons
-                    const tooltipHtml = `
-                        <span class="tooltip-text">This search only works with exact Instagram usernames</span>
-                    `;
-                    newButton.className = 'search-button tooltip';
-                    newButton.innerHTML += tooltipHtml;
-                } else if (siteName.toLowerCase().includes('wikipedia')) {
-                    finalUrl = 'https://en.wikipedia.org/wiki/QUERY';
-                }
 
                 // Create new button
                 const newButton = document.createElement('button');
-                newButton.className = 'search-button tooltip';
-                newButton.dataset.url = finalUrl;
-                newButton.innerHTML = `
-                    <i class="button-icon ${siteIcon}"></i>
-                    ${siteName}
-                `;
+                newButton.className = 'search-button';
+                newButton.dataset.url = siteUrl;
+                
+                // Special cases for specific sites
+                if (siteName.toLowerCase().includes('instagram')) {
+                    newButton.dataset.url = 'https://www.instagram.com/';
+                    newButton.className = 'search-button tooltip';
+                    newButton.innerHTML = `
+                        <i class="button-icon instagram-color fab fa-instagram"></i>
+                        ${siteName}
+                        <span class="tooltip-text">This search only works with exact Instagram usernames</span>
+                    `;
+                } else {
+                    newButton.innerHTML = `
+                        <i class="button-icon ${siteIcon}"></i>
+                        ${siteName}
+                    `;
+                }
 
                 // Add to hidden buttons section
                 hiddenButtons.appendChild(newButton);
-
-                // Save to localStorage
-                saveCustomButton({
-                    name: siteName,
-                    url: finalUrl,
-                    icon: siteIcon
-                });
-
+                
                 // Add click handler to new button
                 addSearchButtonListeners();
 
+                // Save to localStorage
+                saveButtonConfiguration();
+
                 // Reset form and close modal
                 addSearchForm.reset();
-                addMoreModal.style.display = 'none';
+                addMoreModal.classList.remove('show');
+
+                // Reset icon selections
+                document.querySelectorAll('.icon-option').forEach(opt => {
+                    opt.style.backgroundColor = '';
+                    opt.style.borderColor = '#eee';
+                });
             });
+
+            // Initialize icon selector
+            function initIconSelector() {
+                document.querySelectorAll('.icon-option').forEach(option => {
+                    option.addEventListener('click', () => {
+                        const iconInput = document.getElementById('siteIcon');
+                        iconInput.value = option.dataset.icon;
+                        
+                        // Visual feedback for selection
+                        document.querySelectorAll('.icon-option').forEach(opt => {
+                            opt.style.backgroundColor = '';
+                            opt.style.borderColor = '#eee';
+                        });
+                        option.style.backgroundColor = '#f0f0f0';
+                        option.style.borderColor = '#4a90e2';
+                    });
+                });
+            }
 
             // Add Instagram as a default button in main grid
             const mainButtonsGrid = document.getElementById('mainButtons');
@@ -812,75 +974,23 @@
                 });
             }
 
-            // Add emoji selector functionality
-            function initEmojiSelector() {
-                document.querySelectorAll('.icon-option').forEach(option => {
-                    option.addEventListener('click', () => {
-                        const emojiInput = document.getElementById('siteIcon');
-                        emojiInput.value = option.dataset.emoji;
-                        
-                        // Visual feedback for selection
-                        document.querySelectorAll('.icon-option').forEach(opt => {
-                            opt.style.backgroundColor = '';
-                            opt.style.borderColor = '#eee';
-                        });
-                        option.style.backgroundColor = '#f0f0f0';
-                        option.style.borderColor = '#4a90e2';
-                    });
-                });
-            }
-
-            // Initialize emoji selector when the modal opens
-            addMoreLink.addEventListener('click', () => {
-                addMoreModal.style.display = 'flex';
-                initEmojiSelector(); // Initialize emoji selector when modal opens
-            });
-
-            closeModal.addEventListener('click', () => {
-                addMoreModal.classList.add('hide');
-                setTimeout(() => {
-                    addMoreModal.style.display = 'none';
-                    addMoreModal.classList.remove('hide');
-                }, 300);
-                // Reset emoji selections when modal closes
-                document.querySelectorAll('.icon-option').forEach(opt => {
-                    opt.style.backgroundColor = '';
-                    opt.style.borderColor = '#eee';
-                });
-            });
-
-            // Also reset emoji selections when clicking outside the modal
-            window.addEventListener('click', (e) => {
-                if (e.target === addMoreModal) {
-                    addMoreModal.classList.add('hide');
-                    setTimeout(() => {
-                        addMoreModal.style.display = 'none';
-                        addMoreModal.classList.remove('hide');
-                    }, 300);
-                    document.querySelectorAll('.icon-option').forEach(opt => {
-                        opt.style.backgroundColor = '';
-                        opt.style.borderColor = '#eee';
-                    });
-                }
-            });
-
             // Function to save current button configuration
             function saveButtonConfiguration() {
                 const mainButtons = document.getElementById('mainButtons');
                 const hiddenButtons = document.getElementById('hiddenButtons');
                 
                 const mainConfig = Array.from(mainButtons.children).map(button => ({
-                    name: button.textContent.trim().split('\n')[1].trim(),
+                    name: button.textContent.trim(),
                     url: button.dataset.url,
-                    icon: button.querySelector('.button-icon').classList[1],
+                    icon: button.querySelector('.button-icon').className,
                     isTooltip: button.classList.contains('tooltip'),
                     tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
                 }));
 
                 const hiddenConfig = Array.from(hiddenButtons.children).map(button => ({
-                    name: button.textContent.trim().split('\n')[1].trim(),
+                    name: button.textContent.trim(),
                     url: button.dataset.url,
-                    icon: button.querySelector('.button-icon').classList[1],
+                    icon: button.querySelector('.button-icon').className,
                     isTooltip: button.classList.contains('tooltip'),
                     tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
                 }));
@@ -902,8 +1012,12 @@
                         const button = document.createElement('button');
                         button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
                         button.dataset.url = btn.url;
+                        
+                        // Extract the icon classes (excluding button-icon)
+                        const iconClasses = btn.icon.split(' ').filter(cls => cls !== 'button-icon').join(' ');
+                        
                         button.innerHTML = `
-                            <i class="button-icon ${btn.icon}"></i>
+                            <i class="button-icon ${iconClasses}"></i>
                             ${btn.name}
                             ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
                         `;
@@ -917,8 +1031,12 @@
                         const button = document.createElement('button');
                         button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
                         button.dataset.url = btn.url;
+                        
+                        // Extract the icon classes (excluding button-icon)
+                        const iconClasses = btn.icon.split(' ').filter(cls => cls !== 'button-icon').join(' ');
+                        
                         button.innerHTML = `
-                            <i class="button-icon ${btn.icon}"></i>
+                            <i class="button-icon ${iconClasses}"></i>
                             ${btn.name}
                             ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
                         `;
@@ -1022,6 +1140,7 @@
                 editModeLink.classList.toggle('active');
                 mainButtons.classList.toggle('edit-mode');
                 hiddenButtons.classList.toggle('edit-mode');
+                pageTitle.contentEditable = isEditMode ? "true" : "false";
 
                 if (isEditMode) {
                     addRemoveButtons();
@@ -1029,6 +1148,8 @@
                 } else {
                     disableDragAndDrop();
                     saveButtonConfiguration();
+                    // Save title when exiting edit mode
+                    localStorage.setItem('pageTitle', pageTitle.textContent);
                     // Remove pointer events and hide remove buttons when exiting edit mode
                     document.querySelectorAll('.remove-btn').forEach(btn => {
                         btn.style.opacity = '0';
@@ -1104,30 +1225,33 @@
                 main: [
                     { name: 'Google', url: 'https://www.google.com/search?q=', icon: 'fab fa-google' },
                     { name: 'YouTube', url: 'https://www.youtube.com/results?search_query=', icon: 'fab fa-youtube' },
+                    { name: 'YouTube Music', url: 'https://music.youtube.com/search?q=', icon: 'fas fa-music' },
+                    { name: 'Amazon', url: 'https://www.amazon.com/s?k=', icon: 'fab fa-amazon' },
+                    { name: 'Flipkart', url: 'https://www.flipkart.com/search?q=', icon: 'fas fa-shopping-cart' },
                     { name: 'Reddit', url: 'https://www.reddit.com/search/?q=', icon: 'fab fa-reddit-alien' },
-                    { name: 'StackOverflow', url: 'https://stackoverflow.com/search?q=', icon: 'fab fa-stack-overflow' },
-                    { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/', icon: 'fab fa-wikipedia-w' },
-                    { name: 'Amazon', url: 'https://www.amazon.in/s?k=', icon: 'fab fa-amazon' },
-                    { name: 'Twitter', url: 'https://twitter.com/search?q=', icon: 'fab fa-twitter' },
-                    { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=', icon: 'fas fa-search' },
                     { name: 'GitHub', url: 'https://github.com/search?q=', icon: 'fab fa-github' },
-                    { name: 'Google Images', url: 'https://www.google.com/search?tbm=isch&q=', icon: 'fas fa-images' },
-                    { name: 'LinkedIn', url: 'https://www.linkedin.com/search/results/all/?keywords=', icon: 'fab fa-linkedin' },
-                    { name: 'Bing', url: 'https://www.bing.com/search?q=', icon: 'fab fa-microsoft' },
+                    { name: 'StackOverflow', url: 'https://stackoverflow.com/search?q=', icon: 'fab fa-stack-overflow' },
                     { name: 'Medium', url: 'https://medium.com/search?q=', icon: 'fab fa-medium' },
                     { name: 'Quora', url: 'https://www.quora.com/search?q=', icon: 'fab fa-quora' },
+                    { name: 'LinkedIn', url: 'https://www.linkedin.com/search/results/all/?keywords=', icon: 'fab fa-linkedin' },
+                    { name: 'Twitter', url: 'https://twitter.com/search?q=', icon: 'fab fa-twitter' },
+                    { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=', icon: 'fas fa-search' },
+                    { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/', icon: 'fab fa-wikipedia-w' },
                     { 
                         name: 'Instagram',
                         url: 'https://www.instagram.com/',
                         icon: 'fab fa-instagram',
                         isTooltip: true,
                         tooltipText: 'This search only works with exact Instagram usernames'
-                    }
-                ],
-                hidden: [
+                    },
+                    { name: 'TikTok', url: 'https://www.tiktok.com/search?q=', icon: 'fab fa-tiktok' },
                     { name: 'Facebook', url: 'https://www.facebook.com/search/top?q=', icon: 'fab fa-facebook' },
                     { name: 'Pinterest', url: 'https://www.pinterest.com/search/pins/?q=', icon: 'fab fa-pinterest' },
                     { name: 'Spotify', url: 'https://open.spotify.com/search/', icon: 'fab fa-spotify' },
+                ],
+                hidden: [
+                    
+                    { name: 'Google Images', url: 'https://www.google.com/search?tbm=isch&q=', icon: 'fas fa-images' },
                     { name: 'IMDB', url: 'https://www.imdb.com/find?q=', icon: 'fas fa-film' },
                     { name: 'Netflix', url: 'https://www.netflix.com/search?q=', icon: 'fas fa-play' }
                 ]
@@ -1138,6 +1262,8 @@
                 if (confirm('Reset all search buttons to default configuration? This will remove any custom buttons.')) {
                     localStorage.removeItem('mainButtonsConfig');
                     localStorage.removeItem('hiddenButtonsConfig');
+                    localStorage.removeItem('pageTitle'); // Also remove custom title
+                    pageTitle.textContent = 'ZeroTab'; // Reset to default title
                     
                     // Save default configuration
                     localStorage.setItem('mainButtonsConfig', JSON.stringify(defaultConfig.main));
@@ -1159,6 +1285,8 @@
                 if (confirm('Remove all search buttons? This cannot be undone unless you reset to default.')) {
                     localStorage.removeItem('mainButtonsConfig');
                     localStorage.removeItem('hiddenButtonsConfig');
+                    localStorage.removeItem('pageTitle'); // Also remove custom title
+                    pageTitle.textContent = 'ZeroTab'; // Reset to default title
                     
                     const mainButtons = document.getElementById('mainButtons');
                     const hiddenButtons = document.getElementById('hiddenButtons');
