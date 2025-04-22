@@ -104,6 +104,80 @@
         .additional-link:hover {
             color: #4a90e2;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .close-modal {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .submit-btn {
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .submit-btn:hover {
+            background-color: #357abd;
+        }
+
+        /* Hidden buttons section */
+        .hidden-buttons {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .hidden-buttons.visible {
+            display: grid;
+        }
     </style>
 </head>
 <body>
@@ -112,7 +186,7 @@
             <input type="text" class="search-input" placeholder="Type your search here..." autofocus>
         </div>
         
-        <div class="buttons-grid">
+        <div class="buttons-grid" id="mainButtons">
             <button class="search-button" data-url="https://www.google.com/search?q=">
                 <span class="button-emoji">🌐</span>
                 Google
@@ -155,9 +229,36 @@
             </button>
         </div>
 
+        <div class="buttons-grid hidden-buttons" id="hiddenButtons">
+            <!-- Custom buttons will be added here -->
+        </div>
+
         <div class="additional-links">
             <a class="additional-link" id="seeMore">See More</a>
             <a class="additional-link" id="addMore">Add More</a>
+        </div>
+    </div>
+
+    <!-- Add More Modal -->
+    <div class="modal" id="addMoreModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Add New Search Option</h2>
+            <form id="addSearchForm">
+                <div class="form-group">
+                    <label for="siteName">Site Name:</label>
+                    <input type="text" id="siteName" required>
+                </div>
+                <div class="form-group">
+                    <label for="siteUrl">Search URL (use QUERY as placeholder):</label>
+                    <input type="text" id="siteUrl" placeholder="https://example.com/search?q=QUERY" required>
+                </div>
+                <div class="form-group">
+                    <label for="siteEmoji">Emoji:</label>
+                    <input type="text" id="siteEmoji" placeholder="🔍" required>
+                </div>
+                <button type="submit" class="submit-btn">Add Search Option</button>
+            </form>
         </div>
     </div>
 
@@ -167,6 +268,13 @@
             const searchButtons = document.querySelectorAll('.search-button');
             const seeMoreLink = document.getElementById('seeMore');
             const addMoreLink = document.getElementById('addMore');
+            const addMoreModal = document.getElementById('addMoreModal');
+            const closeModal = document.querySelector('.close-modal');
+            const addSearchForm = document.getElementById('addSearchForm');
+            const hiddenButtons = document.getElementById('hiddenButtons');
+
+            // Load custom buttons from localStorage
+            loadCustomButtons();
 
             // Prevent form submission on Enter key
             searchInput.addEventListener('keypress', (e) => {
@@ -176,27 +284,99 @@
             });
 
             // Add click handlers to all search buttons
-            searchButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const query = searchInput.value.trim();
-                    if (query) {
-                        const searchUrl = button.dataset.url + encodeURIComponent(query);
-                        window.open(searchUrl, '_blank');
-                    }
+            function addSearchButtonListeners() {
+                document.querySelectorAll('.search-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const query = searchInput.value.trim();
+                        if (query) {
+                            const searchUrl = button.dataset.url + encodeURIComponent(query);
+                            window.open(searchUrl, '_blank');
+                        }
+                    });
                 });
-            });
+            }
 
-            // Add click handler for See More link
+            addSearchButtonListeners();
+
+            // See More functionality
             seeMoreLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert('This feature will be implemented in a future update. Stay tuned!');
+                hiddenButtons.classList.toggle('visible');
+                seeMoreLink.textContent = hiddenButtons.classList.contains('visible') ? 'See Less' : 'See More';
             });
 
-            // Add click handler for Add More link
+            // Add More Modal functionality
             addMoreLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert('This feature will be implemented in a future update. Stay tuned!');
+                addMoreModal.style.display = 'block';
             });
+
+            closeModal.addEventListener('click', () => {
+                addMoreModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', (e) => {
+                if (e.target === addMoreModal) {
+                    addMoreModal.style.display = 'none';
+                }
+            });
+
+            // Handle form submission
+            addSearchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const siteName = document.getElementById('siteName').value;
+                const siteUrl = document.getElementById('siteUrl').value;
+                const siteEmoji = document.getElementById('siteEmoji').value;
+
+                // Create new button
+                const newButton = document.createElement('button');
+                newButton.className = 'search-button';
+                newButton.dataset.url = siteUrl;
+                newButton.innerHTML = `
+                    <span class="button-emoji">${siteEmoji}</span>
+                    ${siteName}
+                `;
+
+                // Add to hidden buttons section
+                hiddenButtons.appendChild(newButton);
+
+                // Save to localStorage
+                saveCustomButton({
+                    name: siteName,
+                    url: siteUrl,
+                    emoji: siteEmoji
+                });
+
+                // Add click handler to new button
+                addSearchButtonListeners();
+
+                // Reset form and close modal
+                addSearchForm.reset();
+                addMoreModal.style.display = 'none';
+            });
+
+            // Save custom button to localStorage
+            function saveCustomButton(button) {
+                let customButtons = JSON.parse(localStorage.getItem('customButtons') || '[]');
+                customButtons.push(button);
+                localStorage.setItem('customButtons', JSON.stringify(customButtons));
+            }
+
+            // Load custom buttons from localStorage
+            function loadCustomButtons() {
+                const customButtons = JSON.parse(localStorage.getItem('customButtons') || '[]');
+                customButtons.forEach(button => {
+                    const newButton = document.createElement('button');
+                    newButton.className = 'search-button';
+                    newButton.dataset.url = button.url;
+                    newButton.innerHTML = `
+                        <span class="button-emoji">${button.emoji}</span>
+                        ${button.name}
+                    `;
+                    hiddenButtons.appendChild(newButton);
+                });
+            }
         });
     </script>
 </body>
