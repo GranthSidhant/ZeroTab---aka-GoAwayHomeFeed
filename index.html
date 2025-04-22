@@ -70,6 +70,7 @@
             flex-direction: column;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
         }
 
         .search-button:hover {
@@ -209,6 +210,47 @@
         .emoji-option:hover {
             background-color: #f0f0f0;
             border-color: #ddd;
+        }
+
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 8px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Arrow for tooltip */
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
         }
     </style>
 </head>
@@ -376,14 +418,20 @@
                 // Special cases for specific sites
                 let finalUrl = siteUrl;
                 if (siteName.toLowerCase().includes('instagram')) {
-                    finalUrl = 'https://www.instagram.com/explore/tags/QUERY';
+                    finalUrl = 'https://www.instagram.com/';
+                    // Add tooltip for custom Instagram buttons
+                    const tooltipHtml = `
+                        <span class="tooltip-text">This search only works with exact Instagram usernames</span>
+                    `;
+                    newButton.className = 'search-button tooltip';
+                    newButton.innerHTML += tooltipHtml;
                 } else if (siteName.toLowerCase().includes('wikipedia')) {
                     finalUrl = 'https://en.wikipedia.org/wiki/QUERY';
                 }
 
                 // Create new button
                 const newButton = document.createElement('button');
-                newButton.className = 'search-button';
+                newButton.className = 'search-button tooltip';
                 newButton.dataset.url = finalUrl;
                 newButton.innerHTML = `
                     <span class="button-emoji">${siteEmoji}</span>
@@ -411,12 +459,13 @@
             // Add Instagram as a default button in main grid
             const mainButtonsGrid = document.getElementById('mainButtons');
             const instagramButton = document.createElement('button');
-            instagramButton.className = 'search-button';
-            // Using a more reliable Instagram search URL
-            instagramButton.dataset.url = 'https://www.instagram.com/explore/tags/QUERY';
+            instagramButton.className = 'search-button tooltip';
+            // Using direct Instagram profile URL
+            instagramButton.dataset.url = 'https://www.instagram.com/';
             instagramButton.innerHTML = `
                 <span class="button-emoji">📷</span>
                 Instagram
+                <span class="tooltip-text">This search only works with exact Instagram usernames</span>
             `;
             
             // Remove any existing Instagram button from hidden buttons
