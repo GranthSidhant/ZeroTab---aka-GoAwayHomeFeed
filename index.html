@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multi-Site Search</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -45,10 +46,6 @@
             border-color: #4a90e2;
         }
 
-        .search-input::placeholder {
-            color: #999;
-        }
-
         .buttons-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -64,27 +61,71 @@
             color: #333;
             font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             position: relative;
+            text-align: center;
+            min-height: 90px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .search-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            transform: scale(0);
+            opacity: 0;
+            transition: transform 0.5s ease, opacity 0.5s ease;
         }
 
         .search-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-color: #f0f0f0;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-button:hover::before {
+            transform: scale(2);
+            opacity: 1;
+        }
+
+        .search-button:hover .button-icon {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .button-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
         }
 
         .search-button:active {
-            transform: translateY(0);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .button-emoji {
-            font-size: 1.5rem;
+        .search-button:active .button-icon {
+            transform: scale(0.95);
+        }
+
+        .hidden-buttons {
+            display: none;
+        }
+
+        .hidden-buttons.visible {
+            display: grid;
         }
 
         .additional-links {
@@ -106,6 +147,10 @@
             color: #4a90e2;
         }
 
+        .additional-link.active {
+            color: #ff4444;
+        }
+
         /* Modal Styles */
         .modal {
             display: none;
@@ -116,12 +161,12 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
-            position: relative;
             background-color: #fff;
-            margin: 15% auto;
             padding: 2rem;
             width: 90%;
             max-width: 500px;
@@ -156,13 +201,26 @@
             font-size: 1rem;
         }
 
-        .form-group select {
-            width: 100%;
+        .icon-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .icon-option {
+            font-size: 1.2rem;
+            cursor: pointer;
             padding: 0.5rem;
-            border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 1rem;
-            background-color: white;
+            border: 1px solid #eee;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .icon-option:hover {
+            background-color: #f0f0f0;
+            border-color: #4a90e2;
         }
 
         .submit-btn {
@@ -173,52 +231,18 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 1rem;
+            transition: background-color 0.2s ease;
         }
 
         .submit-btn:hover {
             background-color: #357abd;
         }
 
-        /* Hidden buttons section */
-        .hidden-buttons {
-            display: none;
-            margin-top: 1rem;
-        }
-
-        .hidden-buttons.visible {
-            display: grid;
-        }
-
-        .emoji-selector {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            max-width: 100%;
-        }
-
-        .emoji-option {
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-            text-align: center;
-            border: 1px solid #eee;
-        }
-
-        .emoji-option:hover {
-            background-color: #f0f0f0;
-            border-color: #ddd;
-        }
-
-        /* Tooltip styles */
         .tooltip {
             position: relative;
-            display: inline-block;
         }
 
-        .tooltip .tooltip-text {
+        .tooltip-text {
             visibility: hidden;
             width: 200px;
             background-color: rgba(0, 0, 0, 0.8);
@@ -241,8 +265,7 @@
             opacity: 1;
         }
 
-        /* Arrow for tooltip */
-        .tooltip .tooltip-text::after {
+        .tooltip-text::after {
             content: "";
             position: absolute;
             top: 100%;
@@ -276,25 +299,112 @@
 
         .edit-mode .search-button {
             cursor: move;
-            user-select: none;
         }
 
-        .edit-mode .search-button:hover {
-            transform: none;
+        .edit-options {
+            display: none;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            border-top: 1px solid #eee;
         }
 
-        .dragging {
-            opacity: 0.5;
-            transform: scale(0.95);
+        .edit-mode ~ .edit-options {
+            display: flex;
         }
 
-        .additional-link.active {
-            color: #ff4444;
+        .edit-option-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
 
-        .additional-link.active:hover {
-            color: #ff6666;
+        .reset-btn {
+            background-color: #4a90e2;
+            color: white;
         }
+
+        .clear-btn {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        .undo-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .undo-container.visible {
+            display: flex;
+            animation: slideUp 0.3s ease;
+        }
+
+        .undo-btn {
+            background-color: white;
+            color: #4a90e2;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+
+        .undo-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        /* Brand Colors */
+        .google-color { color: #4285F4; }
+        .youtube-color { color: #FF0000; }
+        .reddit-color { color: #FF4500; }
+        .stackoverflow-color { color: #F48024; }
+        .wikipedia-color { color: #000000; }
+        .amazon-color { color: #FF9900; }
+        .twitter-color { color: #1DA1F2; }
+        .duckduckgo-color { color: #DE5833; }
+        .github-color { color: #171515; }
+        .linkedin-color { color: #0077B5; }
+        .bing-color { color: #008373; }
+        .medium-color { color: #000000; }
+        .quora-color { color: #B92B27; }
+        .instagram-color { color: #E4405F; }
+        .facebook-color { color: #1877F2; }
+        .pinterest-color { color: #BD081C; }
+        .spotify-color { color: #1DB954; }
+        .imdb-color { color: #F5C518; }
+        .netflix-color { color: #E50914; }
+        .twitch-color { color: #9146FF; }
+        .tiktok-color { color: #000000; }
+        .coursera-color { color: #0056D2; }
+        .udemy-color { color: #A435F0; }
+        .behance-color { color: #053EFF; }
     </style>
 </head>
 <body>
@@ -305,96 +415,125 @@
         
         <div class="buttons-grid" id="mainButtons">
             <button class="search-button" data-url="https://www.google.com/search?q=">
-                <span class="button-emoji">🌐</span>
+                <i class="button-icon google-color fab fa-google"></i>
                 Google
             </button>
             <button class="search-button" data-url="https://www.youtube.com/results?search_query=">
-                <span class="button-emoji">▶️</span>
+                <i class="button-icon youtube-color fab fa-youtube"></i>
                 YouTube
             </button>
             <button class="search-button" data-url="https://www.reddit.com/search/?q=">
-                <span class="button-emoji">👽</span>
+                <i class="button-icon reddit-color fab fa-reddit-alien"></i>
                 Reddit
             </button>
             <button class="search-button" data-url="https://stackoverflow.com/search?q=">
-                <span class="button-emoji">💻</span>
+                <i class="button-icon stackoverflow-color fab fa-stack-overflow"></i>
                 StackOverflow
             </button>
             <button class="search-button" data-url="https://en.wikipedia.org/wiki/">
-                <span class="button-emoji">📚</span>
+                <i class="button-icon wikipedia-color fab fa-wikipedia-w"></i>
                 Wikipedia
             </button>
             <button class="search-button" data-url="https://www.amazon.in/s?k=">
-                <span class="button-emoji">🛒</span>
+                <i class="button-icon amazon-color fab fa-amazon"></i>
                 Amazon
             </button>
             <button class="search-button" data-url="https://twitter.com/search?q=">
-                <span class="button-emoji">🐦</span>
+                <i class="button-icon twitter-color fab fa-twitter"></i>
                 Twitter
             </button>
             <button class="search-button" data-url="https://duckduckgo.com/?q=">
-                <span class="button-emoji">🔍</span>
+                <i class="button-icon duckduckgo-color fas fa-search"></i>
                 DuckDuckGo
             </button>
             <button class="search-button" data-url="https://github.com/search?q=">
-                <span class="button-emoji">🧑‍💻</span>
+                <i class="button-icon github-color fab fa-github"></i>
                 GitHub
             </button>
             <button class="search-button" data-url="https://www.google.com/search?tbm=isch&q=">
-                <span class="button-emoji">🖼️</span>
+                <i class="button-icon google-color fas fa-images"></i>
                 Google Images
             </button>
             <button class="search-button" data-url="https://www.linkedin.com/search/results/all/?keywords=">
-                <span class="button-emoji">💼</span>
+                <i class="button-icon linkedin-color fab fa-linkedin"></i>
                 LinkedIn
             </button>
             <button class="search-button" data-url="https://www.bing.com/search?q=">
-                <span class="button-emoji">🔎</span>
+                <i class="button-icon bing-color fab fa-microsoft"></i>
                 Bing
             </button>
             <button class="search-button" data-url="https://medium.com/search?q=">
-                <span class="button-emoji">📝</span>
+                <i class="button-icon medium-color fab fa-medium"></i>
                 Medium
             </button>
             <button class="search-button" data-url="https://www.quora.com/search?q=">
-                <span class="button-emoji">❓</span>
+                <i class="button-icon quora-color fab fa-quora"></i>
                 Quora
             </button>
             <button class="search-button tooltip" data-url="https://www.instagram.com/">
-                <span class="button-emoji">📷</span>
+                <i class="button-icon instagram-color fab fa-instagram"></i>
                 Instagram
                 <span class="tooltip-text">This search only works with exact Instagram usernames</span>
             </button>
         </div>
 
         <div class="buttons-grid hidden-buttons" id="hiddenButtons">
-            <!-- Additional buttons will be added here -->
             <button class="search-button" data-url="https://www.facebook.com/search/top?q=">
-                <span class="button-emoji">👥</span>
+                <i class="button-icon facebook-color fab fa-facebook"></i>
                 Facebook
             </button>
             <button class="search-button" data-url="https://www.pinterest.com/search/pins/?q=">
-                <span class="button-emoji">📌</span>
+                <i class="button-icon pinterest-color fab fa-pinterest"></i>
                 Pinterest
             </button>
             <button class="search-button" data-url="https://open.spotify.com/search/">
-                <span class="button-emoji">🎵</span>
+                <i class="button-icon spotify-color fab fa-spotify"></i>
                 Spotify
             </button>
             <button class="search-button" data-url="https://www.imdb.com/find?q=">
-                <span class="button-emoji">🎬</span>
+                <i class="button-icon imdb-color fas fa-film"></i>
                 IMDB
             </button>
             <button class="search-button" data-url="https://www.netflix.com/search?q=">
-                <span class="button-emoji">🎦</span>
+                <i class="button-icon netflix-color fas fa-play"></i>
                 Netflix
             </button>
+            <button class="search-button" data-url="https://www.twitch.tv/search?term=">
+                <i class="button-icon twitch-color fab fa-twitch"></i>
+                Twitch
+            </button>
+            <button class="search-button" data-url="https://www.tiktok.com/search?q=">
+                <i class="button-icon tiktok-color fab fa-tiktok"></i>
+                TikTok
+            </button>
+            <button class="search-button" data-url="https://www.coursera.org/search?query=">
+                <i class="button-icon coursera-color fas fa-graduation-cap"></i>
+                Coursera
+            </button>
+            <button class="search-button" data-url="https://www.udemy.com/courses/search/?q=">
+                <i class="button-icon udemy-color fas fa-chalkboard-teacher"></i>
+                Udemy
+            </button>
+            <button class="search-button" data-url="https://www.behance.net/search?search=">
+                <i class="button-icon behance-color fab fa-behance"></i>
+                Behance
+            </button>
+        </div>
+
+        <div class="edit-options">
+            <button class="edit-option-btn reset-btn" id="resetDefault">Reset to Default</button>
+            <button class="edit-option-btn clear-btn" id="clearAll">Clear All</button>
         </div>
 
         <div class="additional-links">
             <a class="additional-link" id="seeMore">See More</a>
             <a class="additional-link" id="addMore">Add More</a>
             <a class="additional-link" id="editMode">Edit</a>
+        </div>
+
+        <div class="undo-container" id="undoContainer">
+            <span>Button removed</span>
+            <button class="undo-btn" id="undoBtn">Undo</button>
         </div>
     </div>
 
@@ -413,20 +552,20 @@
                     <input type="text" id="siteUrl" placeholder="https://example.com/search?q=QUERY" required>
                 </div>
                 <div class="form-group">
-                    <label for="siteEmoji">Choose Emoji:</label>
-                    <div class="emoji-selector">
-                        <span class="emoji-option" data-emoji="🔍">🔍</span>
-                        <span class="emoji-option" data-emoji="🌐">🌐</span>
-                        <span class="emoji-option" data-emoji="📱">📱</span>
-                        <span class="emoji-option" data-emoji="📷">📷</span>
-                        <span class="emoji-option" data-emoji="▶️">▶️</span>
-                        <span class="emoji-option" data-emoji="💻">💻</span>
-                        <span class="emoji-option" data-emoji="📚">📚</span>
-                        <span class="emoji-option" data-emoji="🛒">🛒</span>
-                        <span class="emoji-option" data-emoji="🎮">🎮</span>
-                        <span class="emoji-option" data-emoji="🎵">🎵</span>
+                    <label for="siteIcon">Choose Icon:</label>
+                    <div class="icon-selector">
+                        <span class="icon-option" data-icon="fas fa-search"><i class="fas fa-search"></i></span>
+                        <span class="icon-option" data-icon="fas fa-globe"><i class="fas fa-globe"></i></span>
+                        <span class="icon-option" data-icon="fas fa-mobile"><i class="fas fa-mobile"></i></span>
+                        <span class="icon-option" data-icon="fas fa-camera"><i class="fas fa-camera"></i></span>
+                        <span class="icon-option" data-icon="fas fa-video"><i class="fas fa-video"></i></span>
+                        <span class="icon-option" data-icon="fas fa-laptop"><i class="fas fa-laptop"></i></span>
+                        <span class="icon-option" data-icon="fas fa-book"><i class="fas fa-book"></i></span>
+                        <span class="icon-option" data-icon="fas fa-shopping-cart"><i class="fas fa-shopping-cart"></i></span>
+                        <span class="icon-option" data-icon="fas fa-gamepad"><i class="fas fa-gamepad"></i></span>
+                        <span class="icon-option" data-icon="fas fa-music"><i class="fas fa-music"></i></span>
                     </div>
-                    <input type="text" id="siteEmoji" placeholder="Or type emoji here" required>
+                    <input type="text" id="siteIcon" placeholder="Or type Font Awesome class" required>
                 </div>
                 <button type="submit" class="submit-btn">Add Search Option</button>
             </form>
@@ -481,16 +620,24 @@
             // Add More Modal functionality
             addMoreLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                addMoreModal.style.display = 'block';
+                addMoreModal.style.display = 'flex';
             });
 
             closeModal.addEventListener('click', () => {
-                addMoreModal.style.display = 'none';
+                addMoreModal.classList.add('hide');
+                setTimeout(() => {
+                    addMoreModal.style.display = 'none';
+                    addMoreModal.classList.remove('hide');
+                }, 300);
             });
 
             window.addEventListener('click', (e) => {
                 if (e.target === addMoreModal) {
-                    addMoreModal.style.display = 'none';
+                    addMoreModal.classList.add('hide');
+                    setTimeout(() => {
+                        addMoreModal.style.display = 'none';
+                        addMoreModal.classList.remove('hide');
+                    }, 300);
                 }
             });
 
@@ -500,7 +647,7 @@
                 
                 const siteName = document.getElementById('siteName').value;
                 const siteUrl = document.getElementById('siteUrl').value;
-                const siteEmoji = document.getElementById('siteEmoji').value;
+                const siteIcon = document.getElementById('siteIcon').value;
 
                 // Special cases for specific sites
                 let finalUrl = siteUrl;
@@ -521,7 +668,7 @@
                 newButton.className = 'search-button tooltip';
                 newButton.dataset.url = finalUrl;
                 newButton.innerHTML = `
-                    <span class="button-emoji">${siteEmoji}</span>
+                    <i class="button-icon ${siteIcon}"></i>
                     ${siteName}
                 `;
 
@@ -532,7 +679,7 @@
                 saveCustomButton({
                     name: siteName,
                     url: finalUrl,
-                    emoji: siteEmoji
+                    icon: siteIcon
                 });
 
                 // Add click handler to new button
@@ -555,7 +702,7 @@
                 instagramButton.className = 'search-button tooltip';
                 instagramButton.dataset.url = 'https://www.instagram.com/';
                 instagramButton.innerHTML = `
-                    <span class="button-emoji">📷</span>
+                    <i class="button-icon instagram-color fab fa-instagram"></i>
                     Instagram
                     <span class="tooltip-text">This search only works with exact Instagram usernames</span>
                 `;
@@ -586,7 +733,7 @@
                     newButton.className = 'search-button';
                     newButton.dataset.url = button.url;
                     newButton.innerHTML = `
-                        <span class="button-emoji">${button.emoji}</span>
+                        <i class="button-icon ${button.icon}"></i>
                         ${button.name}
                     `;
                     hiddenButtons.appendChild(newButton);
@@ -595,13 +742,13 @@
 
             // Add emoji selector functionality
             function initEmojiSelector() {
-                document.querySelectorAll('.emoji-option').forEach(option => {
+                document.querySelectorAll('.icon-option').forEach(option => {
                     option.addEventListener('click', () => {
-                        const emojiInput = document.getElementById('siteEmoji');
+                        const emojiInput = document.getElementById('siteIcon');
                         emojiInput.value = option.dataset.emoji;
                         
                         // Visual feedback for selection
-                        document.querySelectorAll('.emoji-option').forEach(opt => {
+                        document.querySelectorAll('.icon-option').forEach(opt => {
                             opt.style.backgroundColor = '';
                             opt.style.borderColor = '#eee';
                         });
@@ -613,14 +760,18 @@
 
             // Initialize emoji selector when the modal opens
             addMoreLink.addEventListener('click', () => {
-                addMoreModal.style.display = 'block';
+                addMoreModal.style.display = 'flex';
                 initEmojiSelector(); // Initialize emoji selector when modal opens
             });
 
             closeModal.addEventListener('click', () => {
-                addMoreModal.style.display = 'none';
+                addMoreModal.classList.add('hide');
+                setTimeout(() => {
+                    addMoreModal.style.display = 'none';
+                    addMoreModal.classList.remove('hide');
+                }, 300);
                 // Reset emoji selections when modal closes
-                document.querySelectorAll('.emoji-option').forEach(opt => {
+                document.querySelectorAll('.icon-option').forEach(opt => {
                     opt.style.backgroundColor = '';
                     opt.style.borderColor = '#eee';
                 });
@@ -629,8 +780,12 @@
             // Also reset emoji selections when clicking outside the modal
             window.addEventListener('click', (e) => {
                 if (e.target === addMoreModal) {
-                    addMoreModal.style.display = 'none';
-                    document.querySelectorAll('.emoji-option').forEach(opt => {
+                    addMoreModal.classList.add('hide');
+                    setTimeout(() => {
+                        addMoreModal.style.display = 'none';
+                        addMoreModal.classList.remove('hide');
+                    }, 300);
+                    document.querySelectorAll('.icon-option').forEach(opt => {
                         opt.style.backgroundColor = '';
                         opt.style.borderColor = '#eee';
                     });
@@ -645,7 +800,7 @@
                 const mainConfig = Array.from(mainButtons.children).map(button => ({
                     name: button.textContent.trim().split('\n')[1].trim(),
                     url: button.dataset.url,
-                    emoji: button.querySelector('.button-emoji').textContent,
+                    icon: button.querySelector('.button-icon').classList[1],
                     isTooltip: button.classList.contains('tooltip'),
                     tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
                 }));
@@ -653,7 +808,7 @@
                 const hiddenConfig = Array.from(hiddenButtons.children).map(button => ({
                     name: button.textContent.trim().split('\n')[1].trim(),
                     url: button.dataset.url,
-                    emoji: button.querySelector('.button-emoji').textContent,
+                    icon: button.querySelector('.button-icon').classList[1],
                     isTooltip: button.classList.contains('tooltip'),
                     tooltipText: button.querySelector('.tooltip-text')?.textContent || ''
                 }));
@@ -676,7 +831,7 @@
                         button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
                         button.dataset.url = btn.url;
                         button.innerHTML = `
-                            <span class="button-emoji">${btn.emoji}</span>
+                            <i class="button-icon ${btn.icon}"></i>
                             ${btn.name}
                             ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
                         `;
@@ -691,7 +846,7 @@
                         button.className = btn.isTooltip ? 'search-button tooltip' : 'search-button';
                         button.dataset.url = btn.url;
                         button.innerHTML = `
-                            <span class="button-emoji">${btn.emoji}</span>
+                            <i class="button-icon ${btn.icon}"></i>
                             ${btn.name}
                             ${btn.tooltipText ? `<span class="tooltip-text">${btn.tooltipText}</span>` : ''}
                         `;
@@ -712,7 +867,63 @@
                 saveButtonConfiguration();
             }
 
-            // Save configuration after removing a button
+            // Undo functionality
+            const undoContainer = document.getElementById('undoContainer');
+            const undoBtn = document.getElementById('undoBtn');
+            const undoStack = [];
+            let undoTimeout = null;
+
+            function showUndoButton(button, parent) {
+                // Add to undo stack
+                undoStack.push({ button, parent });
+                
+                // Update undo message to show number of items that can be restored
+                const count = undoStack.length;
+                undoContainer.querySelector('span').textContent = 
+                    count === 1 ? 'Button removed' : `${count} buttons removed`;
+                
+                undoContainer.classList.add('visible');
+                
+                // Clear any existing timeout
+                if (undoTimeout) {
+                    clearTimeout(undoTimeout);
+                }
+                
+                // Hide undo button after 5 seconds
+                undoTimeout = setTimeout(() => {
+                    undoContainer.classList.remove('visible');
+                    undoStack.length = 0; // Clear the stack
+                }, 5000);
+            }
+
+            undoBtn.addEventListener('click', () => {
+                if (undoStack.length > 0) {
+                    // Get the most recently removed button
+                    const { button, parent } = undoStack.pop();
+                    parent.appendChild(button);
+                    
+                    // Update undo message or hide container
+                    if (undoStack.length > 0) {
+                        undoContainer.querySelector('span').textContent = 
+                            `${undoStack.length} buttons removed`;
+                    } else {
+                        undoContainer.classList.remove('visible');
+                    }
+                    
+                    // Reset timeout
+                    if (undoTimeout) {
+                        clearTimeout(undoTimeout);
+                        undoTimeout = setTimeout(() => {
+                            undoContainer.classList.remove('visible');
+                            undoStack.length = 0;
+                        }, 5000);
+                    }
+                    
+                    saveButtonConfiguration();
+                }
+            });
+
+            // Function to add remove buttons to search buttons
             function addRemoveButtons() {
                 document.querySelectorAll('.search-button').forEach(button => {
                     if (!button.querySelector('.remove-btn')) {
@@ -721,10 +932,10 @@
                         removeBtn.innerHTML = '×';
                         removeBtn.addEventListener('click', (e) => {
                             e.stopPropagation(); // Prevent button click
-                            if (confirm('Remove this search option?')) {
-                                button.remove();
-                                saveButtonConfiguration();
-                            }
+                            const parent = button.parentNode;
+                            button.remove();
+                            showUndoButton(button, parent);
+                            saveButtonConfiguration();
                         });
                         button.appendChild(removeBtn);
                     }
@@ -811,6 +1022,75 @@
 
             // Initialize search button listeners
             addSearchButtonListeners();
+
+            // Default configuration for buttons
+            const defaultConfig = {
+                main: [
+                    { name: 'Google', url: 'https://www.google.com/search?q=', icon: 'fab fa-google' },
+                    { name: 'YouTube', url: 'https://www.youtube.com/results?search_query=', icon: 'fab fa-youtube' },
+                    { name: 'Reddit', url: 'https://www.reddit.com/search/?q=', icon: 'fab fa-reddit-alien' },
+                    { name: 'StackOverflow', url: 'https://stackoverflow.com/search?q=', icon: 'fab fa-stack-overflow' },
+                    { name: 'Wikipedia', url: 'https://en.wikipedia.org/wiki/', icon: 'fab fa-wikipedia-w' },
+                    { name: 'Amazon', url: 'https://www.amazon.in/s?k=', icon: 'fab fa-amazon' },
+                    { name: 'Twitter', url: 'https://twitter.com/search?q=', icon: 'fab fa-twitter' },
+                    { name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=', icon: 'fas fa-search' },
+                    { name: 'GitHub', url: 'https://github.com/search?q=', icon: 'fab fa-github' },
+                    { name: 'Google Images', url: 'https://www.google.com/search?tbm=isch&q=', icon: 'fas fa-images' },
+                    { name: 'LinkedIn', url: 'https://www.linkedin.com/search/results/all/?keywords=', icon: 'fab fa-linkedin' },
+                    { name: 'Bing', url: 'https://www.bing.com/search?q=', icon: 'fab fa-microsoft' },
+                    { name: 'Medium', url: 'https://medium.com/search?q=', icon: 'fab fa-medium' },
+                    { name: 'Quora', url: 'https://www.quora.com/search?q=', icon: 'fab fa-quora' },
+                    { 
+                        name: 'Instagram',
+                        url: 'https://www.instagram.com/',
+                        icon: 'fab fa-instagram',
+                        isTooltip: true,
+                        tooltipText: 'This search only works with exact Instagram usernames'
+                    }
+                ],
+                hidden: [
+                    { name: 'Facebook', url: 'https://www.facebook.com/search/top?q=', icon: 'fab fa-facebook' },
+                    { name: 'Pinterest', url: 'https://www.pinterest.com/search/pins/?q=', icon: 'fab fa-pinterest' },
+                    { name: 'Spotify', url: 'https://open.spotify.com/search/', icon: 'fab fa-spotify' },
+                    { name: 'IMDB', url: 'https://www.imdb.com/find?q=', icon: 'fas fa-film' },
+                    { name: 'Netflix', url: 'https://www.netflix.com/search?q=', icon: 'fas fa-play' }
+                ]
+            };
+
+            // Reset to default configuration
+            document.getElementById('resetDefault').addEventListener('click', () => {
+                if (confirm('Reset all search buttons to default configuration? This will remove any custom buttons.')) {
+                    localStorage.removeItem('mainButtonsConfig');
+                    localStorage.removeItem('hiddenButtonsConfig');
+                    
+                    // Save default configuration
+                    localStorage.setItem('mainButtonsConfig', JSON.stringify(defaultConfig.main));
+                    localStorage.setItem('hiddenButtonsConfig', JSON.stringify(defaultConfig.hidden));
+                    
+                    // Reload the configuration
+                    loadButtonConfiguration();
+                    
+                    // Reapply edit mode elements if in edit mode
+                    if (isEditMode) {
+                        addRemoveButtons();
+                        enableDragAndDrop();
+                    }
+                }
+            });
+
+            // Clear all buttons
+            document.getElementById('clearAll').addEventListener('click', () => {
+                if (confirm('Remove all search buttons? This cannot be undone unless you reset to default.')) {
+                    localStorage.removeItem('mainButtonsConfig');
+                    localStorage.removeItem('hiddenButtonsConfig');
+                    
+                    const mainButtons = document.getElementById('mainButtons');
+                    const hiddenButtons = document.getElementById('hiddenButtons');
+                    
+                    mainButtons.innerHTML = '';
+                    hiddenButtons.innerHTML = '';
+                }
+            });
         });
     </script>
 </body>
